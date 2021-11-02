@@ -10,7 +10,13 @@
     <canvas id="myCanvas" width="480" height="320"></canvas>
     
     <canvas id="leaderboard" width="120" height="320"></canvas>
+	
+	
     
+</div>
+
+<div class = "slider">
+<input type="range" min="0" max="10" value="10" class="slider" id="myslider">
 </div>
 <script>
 	// JavaScript code goes here
@@ -19,26 +25,131 @@
     var game = canvas.getContext("2d");
 	var sep = canvas.getContext("2d");
 	
+	
+	    //initial ball placement
+    var x = canvas.width/2;
+    var y = canvas.height-30;
+	
+	// Button checks
+    var rightPressed = false;
+    var leftPressed = false;
+    var upPressed = false;
+    var downPressed = false;
+	
+	//timer stuff
 	var theTimer = setInterval(Timer, 1000);
 	var timeSeconds = 0;
 	
+	
+	
+	
+	//playing music
+	var audio = new Audio('coolsong.mp4');
+	audio.play();
+	audio.loop = true;
+	
+	//slider change
+	myslider.addEventListener("change", function() {
+    audio.volume = myslider.value/10;
+	}, false);
+	
+	
+	//ball color and stuff
+    var ballRadius = 10;
+
+    function ballMovement(){
+        
+        game.beginPath();
+        game.arc(x, y, ballRadius, 0, Math.PI*2);
+        game.fillStyle = "#0095DD";
+        game.fill();
+        game.closePath();
+    }
+	
+	
+	//timer count function
 	function Timer(){
 		timeSeconds++;
 	}
 	
+	//displaying timer
 	function drawTime(){
 	sep.fillStyle = "black";
 	sep.font = "bold 18px Brush Script MT";
 	sep.fillText(timeSeconds, 13, canvas.height - 13);
 	}
+	
+	
     
     function draw() {
     // drawing code
-	sep.clearRect(0,0, canvas.width, canvas.height);
+	
+	
+	game.clearRect(0,0, canvas.width, canvas.height);
+	
+	ballMovement();
 	drawTime();
+        if(rightPressed) {
+            x += 7;
+            if (x + ballRadius > canvas.width){
+            x = canvas.width - ballRadius;
+            }
+        }
+        else if(leftPressed) {
+            x -= 7;
+            if (x - ballRadius < 0){
+            x = ballRadius;
+            }
+        }
+        if(upPressed) {
+            y -= 7;
+            if (y - ballRadius < 0){
+            y = ballRadius;
+            }
+        }
+        else if(downPressed) {
+            y += 7;
+            if (y + ballRadius > canvas.height){
+            y = canvas.height - ballRadius;
+            }
+        }
 	
     }
     
+    document.addEventListener("keydown", keyDownHandler, false);
+    document.addEventListener("keyup", keyUpHandler, false);
+
+    function keyDownHandler(e) {
+        if(e.key == "Right" || e.key == "ArrowRight") {
+            rightPressed = true;
+        }
+        else if(e.key == "Left" || e.key == "ArrowLeft") {
+            leftPressed = true;
+        }
+
+        if(e.key == "Up" || e.key == "ArrowUp") {
+            upPressed = true;
+        }
+        else if(e.key == "Down" || e.key == "ArrowDown") {
+            downPressed = true;
+        }
+    }
+
+    function keyUpHandler(e) {
+        if(e.key == "Right" || e.key == "ArrowRight") {
+            rightPressed = false;
+        }
+        else if(e.key == "Left" || e.key == "ArrowLeft") {
+            leftPressed = false;
+        }
+
+        if(e.key == "Up" || e.key == "ArrowUp") {
+            upPressed = false;
+        }
+        else if(e.key == "Down" || e.key == "ArrowDown") {
+            downPressed = false;
+        }
+    }
     setInterval(draw, 10);
 </script>    
     
