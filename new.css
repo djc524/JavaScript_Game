@@ -19,6 +19,11 @@ canvas
     
 }
 
+.slider {
+	 position: absolute;
+     bottom: 0;
+}
+
 #myCanvas
 {
     margin-left: 10px;

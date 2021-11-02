@@ -4,13 +4,19 @@
 	<link rel="stylesheet" type="text/css" href="new.css"/>
 </head>
 <body>
-  
+  <img id="myImage" src="goo.png" style="display: none;">
 <div class = 'align'>
     
     <canvas id="myCanvas" width="480" height="320"></canvas>
     
     <canvas id="leaderboard" width="120" height="320"></canvas>
+	
+	
     
+</div>
+
+<div class = "slider">
+<input type="range" min="0" max="10" value="10" class="slider" id="myslider">
 </div>
 <script>
 	// JavaScript code goes here
@@ -19,7 +25,7 @@
     var game = canvas.getContext("2d");
 	var sep = canvas.getContext("2d");
 	
-	
+	var img = document.getElementById("myImage");
 	    //initial ball placement
     var x = canvas.width/2;
     var y = canvas.height-30;
@@ -40,18 +46,38 @@
 	//playing music
 	var audio = new Audio('coolsong.mp4');
 	audio.play();
+	audio.loop = true;
+	
+	//slider change
+	myslider.addEventListener("change", function() {
+    audio.volume = myslider.value/10;
+	}, false);
 	
 	
 	//ball color and stuff
     var ballRadius = 10;
 
+
+
+
+
     function ballMovement(){
-        
+      
+	  //make player ball
+	    
         game.beginPath();
         game.arc(x, y, ballRadius, 0, Math.PI*2);
         game.fillStyle = "#0095DD";
         game.fill();
         game.closePath();
+		
+		
+		
+		//making it sprite
+		/*game.beginPath();
+		game.drawImage(img,x,y,ballRadius*4,ballRadius*4);
+		game.closePath();
+		*/
     }
 	
 	
@@ -66,7 +92,18 @@
 	sep.font = "bold 18px Brush Script MT";
 	sep.fillText(timeSeconds, 13, canvas.height - 13);
 	}
-	
+	//bullet stuff
+    var bulletRadius = 10
+    var bulletX = 25;
+    var bulletY = 25;
+
+    function Bullet(){
+        game.beginPath();
+        game.arc(bulletX, bulletY, bulletRadius, 0, Math.PI*2);
+        game.fillStyle = "green";
+        game.fill();
+        game.closePath();
+    }
 	
     
     function draw() {
@@ -76,6 +113,7 @@
 	game.clearRect(0,0, canvas.width, canvas.height);
 	
 	ballMovement();
+    Bullet();
 	drawTime();
         if(rightPressed) {
             x += 7;
@@ -101,6 +139,17 @@
             y = canvas.height - ballRadius;
             }
         }
+
+        
+        if (x > (bulletX - bulletRadius) && x < (bulletRadius + bulletX)) {
+        
+        if (y > (bulletY - bulletRadius) && y < (bulletRadius + bulletY)) {
+
+        alert("GAME OVER");
+        document.location.reload();
+        clearInterval(interval); // Needed for Chrome to end game
+        }}
+        //console.log(rightPressed);
 	
     }
     
