@@ -46,7 +46,7 @@
     var ballRadius = 10;
 
     function ballMovement(){
-        game.clearRect(0, 0, canvas.width, canvas.height);
+        
         game.beginPath();
         game.arc(x, y, ballRadius, 0, Math.PI*2);
         game.fillStyle = "#0095DD";
@@ -71,10 +71,12 @@
     
     function draw() {
     // drawing code
-	sep.clearRect(0,0, canvas.width, canvas.height);
-	drawTime();
+	
+	
+	game.clearRect(0,0, canvas.width, canvas.height);
+	
 	ballMovement();
-
+	drawTime();
         if(rightPressed) {
             x += 7;
             if (x + ballRadius > canvas.width){
