@@ -16,11 +16,27 @@
 	// JavaScript code goes here
     
     var canvas = document.getElementById("myCanvas");
-    
     var game = canvas.getContext("2d");
+	var sep = canvas.getContext("2d");
+	
+	var theTimer = setInterval(Timer, 1000);
+	var timeSeconds = 0;
+	
+	function Timer(){
+		timeSeconds++;
+	}
+	
+	function drawTime(){
+	sep.fillStyle = "black";
+	sep.font = "bold 18px Brush Script MT";
+	sep.fillText(timeSeconds, 13, canvas.height - 13);
+	}
     
     function draw() {
     // drawing code
+	sep.clearRect(0,0, canvas.width, canvas.height);
+	drawTime();
+	
     }
     
     setInterval(draw, 10);
