@@ -59,14 +59,44 @@
     var bulletX = 25;
     var bulletY = 25;
 
+    var otherBullet = 10;
+
+    const bulletArray = [];       
+
+    const bulletProperties = [bulletRadius,bulletX,bulletY,"green"];
+    bulletArray.push(bulletProperties);
+    bulletArray.push([15,60,60,"blue"]);
+
+    console.log(bulletArray);
+    console.log(bulletArray.length);
+
     function Bullet(){
-        game.beginPath();
-        game.arc(bulletX, bulletY, bulletRadius, 0, Math.PI*2);
-        game.fillStyle = "green";
-        game.fill();
-        game.closePath();
+        var i = 0
+        while (i < bulletArray.length){
+            game.beginPath();
+            game.arc(bulletArray[i][1], bulletArray[i][2], bulletArray[i][0], 0, Math.PI*2);
+            game.fillStyle = bulletArray[i][3];
+            game.fill();
+            game.closePath();
+            i++;
+        }
     }
 	
+    function Collision(){
+        var i = 0
+            while (i < bulletArray.length){
+                if (x > (bulletArray[i][1] - bulletArray[i][0]) && x < (bulletArray[i][0] + bulletArray[i][1])) {
+        
+                    if (y > (bulletArray[i][2] - bulletArray[i][0]) && y < (bulletArray[i][0] + bulletArray[i][2])) {
+
+                    alert("GAME OVER");
+                    document.location.reload();
+                    clearInterval(interval); // Needed for Chrome to end game
+                    }
+                }
+            i++;
+            }
+        }
 	
 	//timer count function
 	function Timer(){
@@ -89,7 +119,9 @@
 	game.clearRect(0,0, canvas.width, canvas.height);
 	
 	ballMovement();
+
     Bullet();
+
 	drawTime();
         if(rightPressed) {
             x += 7;
@@ -116,15 +148,8 @@
             }
         }
 
+        Collision();
         
-        if (x > (bulletX - bulletRadius) && x < (bulletRadius + bulletX)) {
-        
-        if (y > (bulletY - bulletRadius) && y < (bulletRadius + bulletY)) {
-
-        alert("GAME OVER");
-        document.location.reload();
-        clearInterval(interval); // Needed for Chrome to end game
-        }}
         //console.log(rightPressed);
 	
     }
