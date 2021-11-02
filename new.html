@@ -48,6 +48,12 @@
 	//playing music
 	var audio = new Audio('coolsong.mp4');
 	audio.play();
+	audio.loop = true;
+	
+	//slider change
+	myslider.addEventListener("change", function() {
+    audio.volume = myslider.value/10;
+	}, false);
 	
 	
 	//ball color and stuff
