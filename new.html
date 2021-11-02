@@ -18,14 +18,16 @@
 <div class = "slider">
 <input type="range" min="0" max="10" value="10" class="slider" id="myslider">
 </div>
+<script type="text/javascript" src="LeaderBoard.json"></script>
 <script>
 	// JavaScript code goes here
     
+     
     var canvas = document.getElementById("myCanvas");
     var game = canvas.getContext("2d");
 	var sep = canvas.getContext("2d");
 	
-	var img = document.getElementById("myImage");
+	
 	    //initial ball placement
     var x = canvas.width/2;
     var y = canvas.height-30;
@@ -46,28 +48,18 @@
 	//playing music
 	var audio = new Audio('coolsong.mp4');
 	audio.play();
-	audio.loop = true;
-	
-	//slider change
-	myslider.addEventListener("change", function() {
-    audio.volume = myslider.value/10;
-	}, false);
 	
 	
 	//ball color and stuff
     var ballRadius = 10;
 
-
-
-
-
-    function ballMovement(){
+     function ballMovement(){
       
 	  //make player ball
 	    
         game.beginPath();
         game.arc(x, y, ballRadius, 0, Math.PI*2);
-        game.fillStyle = "#0095DD";
+        game.fillStyle = "red";
         game.fill();
         game.closePath();
 		
@@ -79,7 +71,50 @@
 		game.closePath();
 		*/
     }
+
+    //bullet stuff
+    var bulletRadius = 10
+    var bulletX = 25;
+    var bulletY = 25;
+
+    var otherBullet = 10;
+
+    const bulletArray = [];       
+
+    const bulletProperties = [bulletRadius,bulletX,bulletY,"green"];
+    bulletArray.push(bulletProperties);
+    bulletArray.push([15,60,60,"blue"]);
+
+    console.log(bulletArray);
+    console.log(bulletArray.length);
+
+    function Bullet(){
+        var i = 0
+        while (i < bulletArray.length){
+            game.beginPath();
+            game.arc(bulletArray[i][1], bulletArray[i][2], bulletArray[i][0], 0, Math.PI*2);
+            game.fillStyle = bulletArray[i][3];
+            game.fill();
+            game.closePath();
+            i++;
+        }
+    }
 	
+    function Collision(){
+        var i = 0
+            while (i < bulletArray.length){
+                if (x > (bulletArray[i][1] - bulletArray[i][0]) && x < (bulletArray[i][0] + bulletArray[i][1])) {
+        
+                    if (y > (bulletArray[i][2] - bulletArray[i][0]) && y < (bulletArray[i][0] + bulletArray[i][2])) {
+
+                    alert("GAME OVER");
+                    document.location.reload();
+                    clearInterval(interval); // Needed for Chrome to end game
+                    }
+                }
+            i++;
+            }
+        }
 	
 	//timer count function
 	function Timer(){
@@ -92,18 +127,7 @@
 	sep.font = "bold 18px Brush Script MT";
 	sep.fillText(timeSeconds, 13, canvas.height - 13);
 	}
-	//bullet stuff
-    var bulletRadius = 10
-    var bulletX = 25;
-    var bulletY = 25;
-
-    function Bullet(){
-        game.beginPath();
-        game.arc(bulletX, bulletY, bulletRadius, 0, Math.PI*2);
-        game.fillStyle = "green";
-        game.fill();
-        game.closePath();
-    }
+	
 	
     
     function draw() {
@@ -113,7 +137,9 @@
 	game.clearRect(0,0, canvas.width, canvas.height);
 	
 	ballMovement();
+
     Bullet();
+
 	drawTime();
         if(rightPressed) {
             x += 7;
@@ -140,18 +166,13 @@
             }
         }
 
+        Collision();
         
-        if (x > (bulletX - bulletRadius) && x < (bulletRadius + bulletX)) {
-        
-        if (y > (bulletY - bulletRadius) && y < (bulletRadius + bulletY)) {
-
-        alert("GAME OVER");
-        document.location.reload();
-        clearInterval(interval); // Needed for Chrome to end game
-        }}
         //console.log(rightPressed);
 	
     }
+
+
     
     document.addEventListener("keydown", keyDownHandler, false);
     document.addEventListener("keyup", keyUpHandler, false);
@@ -187,7 +208,28 @@
             downPressed = false;
         }
     }
-    setInterval(draw, 10);
+
+    
+
+
+
+    var interval = setInterval(draw, 10);
+	
+	
+	
+	// LeaderBoard Section
+	var canvas2 = document.getElementById("leaderboard");
+	var cani = canvas2.getContext("2d");
+	var mydata = JSON.parse(data);
+	
+	 function draw2() {
+	  cani.beginPath();
+	cani.fillText(mydata[0].name, 13, 13);
+	cani.fillText(mydata[0].Time, 45, 13);
+	 cani.closePath();
+	}
+	setInterval(draw2, 10);
+	
 </script>    
     
     
