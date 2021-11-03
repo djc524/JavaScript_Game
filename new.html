@@ -37,6 +37,8 @@
     var leftPressed = false;
     var upPressed = false;
     var downPressed = false;
+    var zPressed = false;
+    var pushed = false;
 	
 	//timer stuff
 	var theTimer = setInterval(Timer, 1000);
@@ -82,16 +84,13 @@
     var wait = 0;
     var interval = 0;
     const bulletArray = [];       
+    const playerArray = [];   
 
     // Bullet Pattern stuff
-    // Bullets are (Radius, x position, y position, color, pattern ,x speed, y speed)
+    // Bullets are (Radius, x position, y position, color, pattern ,x speed, y speed, breakable)
 
     // 1 = straight 2 = diagonal right 3 = diagonal left 4 = enemy 5 = tracking 9 = dummy
 
-
-
-    console.log(bulletArray);
-    console.log(bulletArray.length);
 
     function Bullet(){
         var i = 0
@@ -99,6 +98,18 @@
             game.beginPath();
             game.arc(bulletArray[i][1], bulletArray[i][2], bulletArray[i][0], 0, Math.PI*2);
             game.fillStyle = bulletArray[i][3];
+            game.fill();
+            game.closePath();
+            i++;
+        }
+    }
+
+    function playerBullet(){
+        var i = 0
+        while (i < playerArray.length){
+            game.beginPath();
+            game.arc(playerArray[i][1], playerArray[i][2], playerArray[i][0], 0, Math.PI*2);
+            game.fillStyle = playerArray[i][3];
             game.fill();
             game.closePath();
             i++;
@@ -117,6 +128,24 @@
                     clearInterval(interval); // Needed for Chrome to end game
                     }
                 }
+
+                //if (bulletArray[i][7] == 1){
+                var j = 0
+                while (j < playerArray.length){
+                    if (playerArray[j][1] > (bulletArray[i][1] - bulletArray[i][0]) && playerArray[j][1] < (bulletArray[i][0] + bulletArray[i][1])) {
+        
+                        if (playerArray[j][2] > (bulletArray[i][2] - bulletArray[i][0]) && playerArray[j][2] < (bulletArray[i][0] + bulletArray[i][2])) {
+
+                        bulletArray[i][4] = 9;
+                        playerArray[j][4] = 9;
+                        console.log("yeet");
+
+                        }
+                    }
+                j++;
+                }
+                //}
+
             i++;
             }
         }
@@ -125,24 +154,26 @@
         var i = 0
             while (i < bulletArray.length){
 
-            // straight down
+            // straight
                 if (bulletArray[i][4] == 1){
-                    bulletArray[i][2] += 5
+
+                    bulletArray[i][1] += bulletArray[i][5]
+                    bulletArray[i][2] += bulletArray[i][6]
+
                 }
-            // diagonal right
-                else if (bulletArray[i][4] == 2){
-                    bulletArray[i][1] += 3
-                    bulletArray[i][2] += 3
+
+                if (bulletArray[i][4] == 2){
+
+                    bulletArray[i][1] = canvas.width/2 + (bulletArray[i][5] * (200*Math.sin(bulletArray[i][2]/40)));
+                    bulletArray[i][2] += bulletArray[i][6]
+
                 }
-            // diagonal left
-                else if (bulletArray[i][4] == 3){
-                    bulletArray[i][1] -= 3
-                    bulletArray[i][2] += 3
-                }
+ 
             // replace with tracking bullet if time is multiple of 2
                 else if (bulletArray[i][4] == 4){
+
                     bulletArray[i][2] += 2
-                    if (timeSeconds%2 == 0){
+                    if (timeSeconds > bulletArray[i][5]){
 
                     var vx = x - bulletArray[i][1];
                     var vy = y - bulletArray[i][2];
@@ -164,24 +195,29 @@
                     bulletArray[i][2] += bulletArray[i][6] * 3
                 }
 
-            // straight right
-                else if (bulletArray[i][4] == 6){               
-                    bulletArray[i][1] += 2
-                }
-
-            // straight left
-                else if (bulletArray[i][4] == 7){
-                    bulletArray[i][1] -= 2
-                }
 
             // dummy empty bullet
                 else if (bulletArray[i][4] == 9){
 
-                    bulletArray[i][1] = 0
-                    bulletArray[i][2] = 0
+                    bulletArray[i][1] = -100
+                    bulletArray[i][2] = -100
                     bulletArray[i][3] = "white"
                 }
-            i++;
+                i++;
+            }
+
+            var i = 0
+            while (i < playerArray.length){
+                if (playerArray[i][4] == 1){
+                    playerArray[i][2] -= 5
+                }
+                else if (playerArray[i][4] == 9){
+
+                    playerArray[i][1] = -100
+                    playerArray[i][2] = -100
+                    playerArray[i][3] = "white"
+                }
+                i++;
             }
 
     }
@@ -191,6 +227,8 @@
         if (wait == 0){
             interval = Math.floor(Math.random() * 2) + (timeSeconds + 1);
 
+            pattern = Math.floor(Math.random() * 7) + 1;
+            /*
             if (timeSeconds < 10) {
                 pattern = Math.floor(Math.random() * 3) + 1;
             }
@@ -200,60 +238,69 @@
             else {
                 pattern = Math.floor(Math.random() * 9) + 1;
             }          
+            */
             wait = 1;
         }
 
         if (timeSeconds == interval){
-        //pattern = 6;
+        //pattern = 1;
+
+        // Bullets are (Radius, x position, y position, color, pattern ,x speed, y speed, breakable)
 
         // 2 diagonal and one enemy/tracking bullet
             if (pattern == 1){
-                bulletArray.push([15,canvas.width/2,0,"gray",4]);
-                bulletArray.push([15,canvas.width/2,0,"blue",2]);
-                bulletArray.push([15,canvas.width/2,0,"blue",3]);
+                bulletArray.push([15,canvas.width/2,0,"gray",4,timeSeconds]);
+                bulletArray.push([15,canvas.width/2,0,"blue",1,3,3,0]);
+                bulletArray.push([15,canvas.width/2,0,"blue",1,-3,3,0]);
             }
         // 5 straight shots
             else if (pattern == 2){
-                bulletArray.push([15,canvas.width/6,0,"green",1]);
-                bulletArray.push([15,canvas.width/6*2,0,"green",1]);
-                bulletArray.push([15,canvas.width/6*3,0,"green",1]);
-                bulletArray.push([15,canvas.width/6*4,0,"green",1]);
-                bulletArray.push([15,canvas.width/6*5,0,"green",1]);
+                bulletArray.push([15,canvas.width/6,0,"green",1,0,5,0]);
+                bulletArray.push([15,canvas.width/6*2,0,"green",1,0,5,0]);
+                bulletArray.push([15,canvas.width/6*3,0,"green",1,0,5,0]);
+                bulletArray.push([15,canvas.width/6*4,0,"green",1,0,5,0]);
+                bulletArray.push([15,canvas.width/6*5,0,"green",1,0,5,0]);
             }
         // 4 diagonals
             else if (pattern == 3){
-                bulletArray.push([15,0,0,"blue",2]);
-                bulletArray.push([15,canvas.width,0,"blue",3]);
-                bulletArray.push([15,canvas.width/4,0,"blue",2]);
-                bulletArray.push([15,canvas.width/4*3,0,"blue",3]);
+                bulletArray.push([15,0,0,"blue",1,3,3,0]);
+                bulletArray.push([15,canvas.width,0,"blue",1,-3,3,0]);
+                bulletArray.push([15,canvas.width/4,0,"blue",1,3,3,0]);
+                bulletArray.push([15,canvas.width/4*3,0,"blue",1,-3,3,0]);
             }
+
+        // harder patterns
             else if (pattern == 4){
-                bulletArray.push([15,0,0,"gray",4]);
-                bulletArray.push([15,canvas.width,0,"gray",4]);
-                bulletArray.push([15,canvas.width/4,0,"gray",4]);
-                bulletArray.push([15,canvas.width/4*3,0,"gray",4]);         
+                bulletArray.push([15,0,0,"gray",4,timeSeconds]);
+                bulletArray.push([15,canvas.width,0,"gray",4,timeSeconds]);
+                bulletArray.push([15,canvas.width/4,0,"gray",4,timeSeconds]);
+                bulletArray.push([15,canvas.width/4*3,0,"gray",4,timeSeconds]);         
             }
             else if (pattern == 5){
-                bulletArray.push([30,0,0,"purple",6]);
-                bulletArray.push([30,canvas.width,canvas.height/6,"purple",7]);
-                bulletArray.push([30,0,canvas.height/6*2,"purple",6]);
-                bulletArray.push([30,canvas.width,canvas.height/6*3,"purple",7]);
-                bulletArray.push([30,0,canvas.height/6*4,"purple",6]);
-                bulletArray.push([30,canvas.width,canvas.height/6*5,"purple",7]);
-                bulletArray.push([30,0,canvas.height,"purple",6]);
+                bulletArray.push([30,0,0,"purple",1,2,0,0]);
+                bulletArray.push([30,canvas.width,canvas.height/6,"purple",1,-2,0,0]);
+                bulletArray.push([30,0,canvas.height/6*2,"purple",1,2,0,0]);
+                bulletArray.push([30,canvas.width,canvas.height/6*3,"purple",1,-2,0,0]);
+                bulletArray.push([30,0,canvas.height/6*4,"purple",1,2,0,0]);
+                bulletArray.push([30,canvas.width,canvas.height/6*5,"purple",1,-2,0,0]);
+                bulletArray.push([30,0,canvas.height,"purple",1,2,0,0]);
             }
             else if (pattern == 6){
-                bulletArray.push([15,0,0,"blue",2]);
-                bulletArray.push([15,canvas.width,0,"blue",3]);
-                bulletArray.push([15,canvas.width/3,0,"blue",2]);
-                bulletArray.push([15,canvas.width/3*2,0,"blue",3]);
-                bulletArray.push([15,canvas.width/2,0,"blue",3]);
+                bulletArray.push([15,0,0,"blue",1,3,3,0]);
+                bulletArray.push([15,canvas.width,0,"blue",1,-3,3,0]);
+                bulletArray.push([15,canvas.width/3,0,"blue",1,3,3,0]);
+                bulletArray.push([15,canvas.width/3*2,0,"blue",1,-3,3,0]);
+                bulletArray.push([15,canvas.width/2,0,"blue",1,-3,3,0]);
 
-                bulletArray.push([15,0,0,"blue",3]);
-                bulletArray.push([15,canvas.width,0,"blue",2]);
-                bulletArray.push([15,canvas.width/3,0,"blue",3]);
-                bulletArray.push([15,canvas.width/3*2,0,"blue",2]);
-                bulletArray.push([15,canvas.width/2,0,"blue",2]);
+                bulletArray.push([15,0,0,"blue",1,-3,3,0]);
+                bulletArray.push([15,canvas.width,0,"blue",1,3,3,0]);
+                bulletArray.push([15,canvas.width/3,0,"blue",1,-3,3,0]);
+                bulletArray.push([15,canvas.width/3*2,0,"blue",1,3,3,0]);
+                bulletArray.push([15,canvas.width/2,0,"blue",1,3,3,0]);
+            }
+            else if (pattern == 7){
+                bulletArray.push([30,canvas.width/2,0,"purple",2,1,1,0]);
+                bulletArray.push([30,canvas.width/2,0,"purple",2,-1,1,0]);
             }
 
             wait = 0;
@@ -284,6 +331,7 @@
     randomBullet();
 	ballMovement();
     Bullet();
+    playerBullet();
 
 	drawTime();
         if(rightPressed) {
@@ -309,6 +357,15 @@
             if (y + ballRadius > canvas.height){
             y = canvas.height - ballRadius;
             }
+        }
+        if(zPressed){
+            if (pushed == false){
+                playerArray.push([5,x,y,"green",1]);
+                pushed = true;
+            }
+        }
+        else if (zPressed == false){
+            pushed = false;
         }
 
         bulletMovement();
@@ -337,6 +394,10 @@
         else if(e.key == "Down" || e.key == "ArrowDown") {
             downPressed = true;
         }
+
+        if(e.key == "Z" || e.key == "z") {
+            zPressed = true;
+        }
     }
 
     function keyUpHandler(e) {
@@ -352,6 +413,10 @@
         }
         else if(e.key == "Down" || e.key == "ArrowDown") {
             downPressed = false;
+        }
+
+        if(e.key == "Z" || e.key == "z") {
+            zPressed = false;
         }
     }
 
