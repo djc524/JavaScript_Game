@@ -37,6 +37,8 @@
     var leftPressed = false;
     var upPressed = false;
     var downPressed = false;
+    var zPressed = false;
+    var pushed = false;
 	
 	//timer stuff
 	var theTimer = setInterval(Timer, 1000);
@@ -79,20 +81,16 @@
     }
 
     //bullet stuff
-    var bulletRadius = 10
-    var bulletX = 25;
-    var bulletY = 25;
-
-    var otherBullet = 10;
-
+    var wait = 0;
+    var interval = 0;
     const bulletArray = [];       
+    const playerArray = [];   
 
-    const bulletProperties = [bulletRadius,bulletX,bulletY,"green"];
-    bulletArray.push(bulletProperties);
-    bulletArray.push([15,60,60,"blue"]);
+    // Bullet Pattern stuff
+    // Bullets are (Radius, x position, y position, color, pattern ,x speed, y speed, breakable)
 
-    console.log(bulletArray);
-    console.log(bulletArray.length);
+    // 1 = straight 2 = diagonal right 3 = diagonal left 4 = enemy 5 = tracking 9 = dummy
+
 
     function Bullet(){
         var i = 0
@@ -105,6 +103,33 @@
             i++;
         }
     }
+
+    function playerBullet(){
+        var i = 0
+        while (i < playerArray.length){
+            game.beginPath();
+            game.arc(playerArray[i][1], playerArray[i][2], playerArray[i][0], 0, Math.PI*2);
+            game.fillStyle = playerArray[i][3];
+            game.fill();
+            game.closePath();
+            i++;
+        }
+    }
+	
+	///Cookie creator function start
+
+	function CookieCreator(value)
+	{
+		expire = "";
+		document.cookie = escape('CookPass') + '=' + escape(value) + expire + "; path=/";
+
+
+
+
+	}
+
+	//cookie creator end
+	
 	
     function Collision(){
         var i = 0
@@ -113,14 +138,215 @@
         
                     if (y > (bulletArray[i][2] - bulletArray[i][0]) && y < (bulletArray[i][0] + bulletArray[i][2])) {
 
-                    alert("GAME OVER");
+                    let finishtime = timeSeconds;
+                   let PlayerName = prompt('Game Over. Type Your Name For ScoreBoard!');
+
+				   //adding player name to json
+				   var jsonNew = ',{"name" : "'+PlayerName+'", "Time" : '+finishtime+'}]';
+
+				   CookieCreator(jsonNew);
+
+				   fetch("scoreUpdate.php", { method: "POST", body: jsonNew })
+				   .then(response => {
+					return response.text();
+					}).then(response => {
+					console.log(response);
+					});
+					
+					
                     document.location.reload();
                     clearInterval(interval); // Needed for Chrome to end game
+                    
+					
+					
+					
+					
+					
+					
+					
+					
+					}
+				
+				}
+
+                //if (bulletArray[i][7] == 1){
+                var j = 0
+                while (j < playerArray.length){
+                    if (playerArray[j][1] > (bulletArray[i][1] - bulletArray[i][0]) && playerArray[j][1] < (bulletArray[i][0] + bulletArray[i][1])) {
+        
+                        if (playerArray[j][2] > (bulletArray[i][2] - bulletArray[i][0]) && playerArray[j][2] < (bulletArray[i][0] + bulletArray[i][2])) {
+
+                        bulletArray[i][4] = 9;
+                        playerArray[j][4] = 9;
+                        console.log("yeet");
+
+                        }
                     }
+                j++;
                 }
+                //}
+
             i++;
             }
         }
+
+    function bulletMovement(){
+        var i = 0
+            while (i < bulletArray.length){
+
+            // straight
+                if (bulletArray[i][4] == 1){
+
+                    bulletArray[i][1] += bulletArray[i][5]
+                    bulletArray[i][2] += bulletArray[i][6]
+
+                }
+
+                if (bulletArray[i][4] == 2){
+
+                    bulletArray[i][1] = canvas.width/2 + (bulletArray[i][5] * (200*Math.sin(bulletArray[i][2]/40)));
+                    bulletArray[i][2] += bulletArray[i][6]
+
+                }
+ 
+            // replace with tracking bullet if time is multiple of 2
+                else if (bulletArray[i][4] == 4){
+
+                    bulletArray[i][2] += 2
+                    if (timeSeconds > bulletArray[i][5]){
+
+                    var vx = x - bulletArray[i][1];
+                    var vy = y - bulletArray[i][2];
+
+                    var dist = Math.sqrt(vx * vx + vy * vy);
+                    var dx = vx / dist;
+                    var dy = vy / dist;
+
+
+                    bulletArray.push([15,bulletArray[i][1],bulletArray[i][2],"black",5,dx,dy]);
+                    bulletArray[i][4] = 9;
+                    }
+                }
+
+            // tracking bullet with 4
+                else if (bulletArray[i][4] == 5){
+
+                    bulletArray[i][1] += bulletArray[i][5] * 3
+                    bulletArray[i][2] += bulletArray[i][6] * 3
+                }
+
+
+            // dummy empty bullet
+                else if (bulletArray[i][4] == 9){
+
+                    bulletArray[i][1] = -100
+                    bulletArray[i][2] = -100
+                    bulletArray[i][3] = "white"
+                }
+                i++;
+            }
+
+            var i = 0
+            while (i < playerArray.length){
+                if (playerArray[i][4] == 1){
+                    playerArray[i][2] -= 5
+                }
+                else if (playerArray[i][4] == 9){
+
+                    playerArray[i][1] = -100
+                    playerArray[i][2] = -100
+                    playerArray[i][3] = "white"
+                }
+                i++;
+            }
+
+    }
+
+    // determines if there will be a pattern and which pattern it will be each second
+    function randomBullet(){
+        if (wait == 0){
+            interval = Math.floor(Math.random() * 2) + (timeSeconds + 1);
+
+            pattern = Math.floor(Math.random() * 7) + 1;
+            /*
+            if (timeSeconds < 10) {
+                pattern = Math.floor(Math.random() * 3) + 1;
+            }
+            else if (timeSeconds < 20) {
+                pattern = Math.floor(Math.random() * 6) + 1;
+            }
+            else {
+                pattern = Math.floor(Math.random() * 9) + 1;
+            }          
+            */
+            wait = 1;
+        }
+
+        if (timeSeconds == interval){
+        //pattern = 1;
+
+        // Bullets are (Radius, x position, y position, color, pattern ,x speed, y speed, breakable)
+
+        // 2 diagonal and one enemy/tracking bullet
+            if (pattern == 1){
+                bulletArray.push([15,canvas.width/2,0,"gray",4,timeSeconds]);
+                bulletArray.push([15,canvas.width/2,0,"blue",1,3,3,0]);
+                bulletArray.push([15,canvas.width/2,0,"blue",1,-3,3,0]);
+            }
+        // 5 straight shots
+            else if (pattern == 2){
+                bulletArray.push([15,canvas.width/6,0,"green",1,0,5,0]);
+                bulletArray.push([15,canvas.width/6*2,0,"green",1,0,5,0]);
+                bulletArray.push([15,canvas.width/6*3,0,"green",1,0,5,0]);
+                bulletArray.push([15,canvas.width/6*4,0,"green",1,0,5,0]);
+                bulletArray.push([15,canvas.width/6*5,0,"green",1,0,5,0]);
+            }
+        // 4 diagonals
+            else if (pattern == 3){
+                bulletArray.push([15,0,0,"blue",1,3,3,0]);
+                bulletArray.push([15,canvas.width,0,"blue",1,-3,3,0]);
+                bulletArray.push([15,canvas.width/4,0,"blue",1,3,3,0]);
+                bulletArray.push([15,canvas.width/4*3,0,"blue",1,-3,3,0]);
+            }
+
+        // harder patterns
+            else if (pattern == 4){
+                bulletArray.push([15,0,0,"gray",4,timeSeconds]);
+                bulletArray.push([15,canvas.width,0,"gray",4,timeSeconds]);
+                bulletArray.push([15,canvas.width/4,0,"gray",4,timeSeconds]);
+                bulletArray.push([15,canvas.width/4*3,0,"gray",4,timeSeconds]);         
+            }
+            else if (pattern == 5){
+                bulletArray.push([30,0,0,"purple",1,2,0,0]);
+                bulletArray.push([30,canvas.width,canvas.height/6,"purple",1,-2,0,0]);
+                bulletArray.push([30,0,canvas.height/6*2,"purple",1,2,0,0]);
+                bulletArray.push([30,canvas.width,canvas.height/6*3,"purple",1,-2,0,0]);
+                bulletArray.push([30,0,canvas.height/6*4,"purple",1,2,0,0]);
+                bulletArray.push([30,canvas.width,canvas.height/6*5,"purple",1,-2,0,0]);
+                bulletArray.push([30,0,canvas.height,"purple",1,2,0,0]);
+            }
+            else if (pattern == 6){
+                bulletArray.push([15,0,0,"blue",1,3,3,0]);
+                bulletArray.push([15,canvas.width,0,"blue",1,-3,3,0]);
+                bulletArray.push([15,canvas.width/3,0,"blue",1,3,3,0]);
+                bulletArray.push([15,canvas.width/3*2,0,"blue",1,-3,3,0]);
+                bulletArray.push([15,canvas.width/2,0,"blue",1,-3,3,0]);
+
+                bulletArray.push([15,0,0,"blue",1,-3,3,0]);
+                bulletArray.push([15,canvas.width,0,"blue",1,3,3,0]);
+                bulletArray.push([15,canvas.width/3,0,"blue",1,-3,3,0]);
+                bulletArray.push([15,canvas.width/3*2,0,"blue",1,3,3,0]);
+                bulletArray.push([15,canvas.width/2,0,"blue",1,3,3,0]);
+            }
+            else if (pattern == 7){
+                bulletArray.push([30,canvas.width/2,0,"purple",2,1,1,0]);
+                bulletArray.push([30,canvas.width/2,0,"purple",2,-1,1,0]);
+            }
+
+            wait = 0;
+        }
+    }
+
 	
 	//timer count function
 	function Timer(){
@@ -142,36 +368,47 @@
 	
 	game.clearRect(0,0, canvas.width, canvas.height);
 	
+    randomBullet();
 	ballMovement();
-
     Bullet();
+    playerBullet();
 
 	drawTime();
         if(rightPressed) {
-            x += 7;
+            x += 5;
             if (x + ballRadius > canvas.width){
             x = canvas.width - ballRadius;
             }
         }
         else if(leftPressed) {
-            x -= 7;
+            x -= 5;
             if (x - ballRadius < 0){
             x = ballRadius;
             }
         }
         if(upPressed) {
-            y -= 7;
+            y -= 5;
             if (y - ballRadius < 0){
             y = ballRadius;
             }
         }
         else if(downPressed) {
-            y += 7;
+            y += 5;
             if (y + ballRadius > canvas.height){
             y = canvas.height - ballRadius;
             }
         }
+        if(zPressed){
+            if (pushed == false){
+                playerArray.push([5,x,y,"green",1]);
+                pushed = true;
+            }
+        }
+        else if (zPressed == false){
+            pushed = false;
+        }
 
+        bulletMovement();
         Collision();
         
         //console.log(rightPressed);
@@ -197,6 +434,10 @@
         else if(e.key == "Down" || e.key == "ArrowDown") {
             downPressed = true;
         }
+
+        if(e.key == "Z" || e.key == "z") {
+            zPressed = true;
+        }
     }
 
     function keyUpHandler(e) {
@@ -213,6 +454,10 @@
         else if(e.key == "Down" || e.key == "ArrowDown") {
             downPressed = false;
         }
+
+        if(e.key == "Z" || e.key == "z") {
+            zPressed = false;
+        }
     }
 
     
@@ -224,17 +469,74 @@
 	
 	
 	// LeaderBoard Section
+	
+	
+	//drawing function for leaderboard
+	function draw2(size,arrayLead,data) {
+	  cani.beginPath();
+	  for(i = 0;i < size; i++  ){
+	  cani.fillText(data[arrayLead[i]].name, 13 , 13 +(i*13));
+      cani.fillText(data[arrayLead[i]].Time, 45, 13+(i*13));
+	  cani.closePath();
+	  }
+	}
+	
+	//sorting function for leaderboard
+	function sort(size,arrayLead,data)
+	{
+		for(j = 0;j < size; j++  )
+		{
+			let max = 0;
+			let maxindex = j;
+			for(i = 0;i < size; i++  )
+			{
+				if(j == 0)
+				{
+					if(max < data[i].Time)
+					{
+						max = data[i].Time;
+						maxindex = i;
+					}
+				}
+				else
+				{
+					if(max < data[i].Time && !arrayLead.includes(i))
+					{
+						max = data[i].Time;
+						maxindex = i;
+					}
+			
+			
+				}
+			}
+			arrayLead.push(maxindex);
+			console.log(maxindex);
+		}
+	}
+	
+	
+	
 	var canvas2 = document.getElementById("leaderboard");
 	var cani = canvas2.getContext("2d");
-	var mydata = JSON.parse(data);
+	var mydata = [];
+	function getthedata()
+	{
+		fetch('LeaderBoard.json')
+		.then(response => response.json())
+		.then(data => {
+				var size = Object.keys(data).length;
+				var arrayLead = [];
+				sort(size,arrayLead,data);
+				draw2(size,arrayLead,data);
+		})
+	}	
 	
-	 function draw2() {
-	  cani.beginPath();
-	cani.fillText(mydata[0].name, 13, 13);
-	cani.fillText(mydata[0].Time, 45, 13);
-	 cani.closePath();
-	}
-	setInterval(draw2, 10);
+	
+	var interval = setInterval(getthedata(), 1000);
+	
+	
+	
+	
 	
 </script>    
     
