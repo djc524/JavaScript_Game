@@ -1,1 +1,1 @@
-data = '[{"name" : "John", "Time" : 100}]';
+[{"name" : "John", "Time" : 100},{"name" : "Tim", "Time" : 1000},{"name" : "Bob", "Time" : 1}]
