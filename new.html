@@ -5,6 +5,15 @@
 </head>
 <body>
   <img id="myImage" src="goo.png" style="display: none;">
+  <img id="playhealth" src="heart.png" style="display: none;">
+  <img id="playerShip" src="ship.png" style="display: none;">
+  <img id="playerShipHurt" src="shiphurt.png" style="display: none;">
+  <img id="playerBullet" src="bullet.png" style="display: none;">
+  <img id="bulletInactive" src="inactiveshot.png" style="display: none;">
+  <img id="bulletActive" src="activeshot.png" style="display: none;">
+  <img id="bossShip" src="enemyship2.png" style="display: none;">
+  <img id="enemyShip" src="enemyship.png" style="display: none;">
+  
 <div class = 'align'>
     
     <canvas id="myCanvas" width="480" height="320"></canvas>
@@ -26,7 +35,12 @@
 <div class = "slider">
 <input type="range" min="0" max="10" value="10" class="slider" id="myslider">
 </div>
+
+ <button onclick="musicChange(0)"><-</button> 
+ <button onclick="musicChange(0)">-></button> 
+ 
 <script type="text/javascript" src="LeaderBoard.json"></script>
+
 <script>
 	// JavaScript code goes here
     
@@ -61,11 +75,63 @@
     var menuLoad = false;
 	var startMenu = true;
 	var resetStarted = false;
+
+    var focused = true;
 	
+	//player health
+	var playHP = 3;
+	var healthimg = document.getElementById('playheath');
+	
+	//iframes
+	
+	
+	var iframeval= 100;
+	var iframevalOG = iframeval;
+	var iframes= false;
+	
+	var musiclist = ['coolsong.mp4','Final-Hour-isaiah658.mp3']
+	var musicindex = 0;
 	//playing music
 	var audio = new Audio('coolsong.mp4');
 	audio.play();
 	audio.loop = true;
+	
+	//function to change music
+	function musicChange(direction)
+	{
+	
+		if(direction == 0)
+		{
+			if(musicindex == 0)
+			{
+				musicindex = musiclist.length - 1;
+
+			}	
+            else
+			{
+				musicindex = musicindex- 1;
+			}			
+		}
+		else
+		{
+				if(musicindex == musicindex.length - 1)
+				{
+					musicindex = 0;
+				}
+				else
+				{				
+				musicindex = musicindex + 1;
+				}
+		}
+
+		audio.pause();
+		audio = new Audio(musiclist[musicindex])
+		audio.play();
+		audio.loop = true;
+	
+	}
+	
+	
 	
 	//slider change
 	myslider.addEventListener("change", function() {
@@ -79,10 +145,20 @@
      function playerSpawn(){
       
 	  //make player ball
+
+        let img = document.getElementById("playerShip");
+        let img2 = document.getElementById("playerShipHurt");
 	    
         game.beginPath();
         game.arc(x, y, ballRadius, 0, Math.PI*2);
-        game.fillStyle = "red";
+		if(iframes){
+		game.fillStyle = "rgba(255,0,0,0)";
+        game.drawImage(img2,x-16,y-16);       
+		}
+		else{
+        game.fillStyle = "rgba(255,0,0,0)";
+        game.drawImage(img,x-16,y-16);
+		}
         game.fill();
         game.closePath();
 		
@@ -108,13 +184,16 @@
     const effectArray = [];  
 
     // Bullet Pattern stuff
-    // Enemy Bullets are (Radius, x position, y position, color, pattern ,x speed, y speed, breakable)
+    // Enemy Bullets are (Radius, x position, y position, color, pattern ,x speed, y speed, breakable, sprite)
 
     function Bullets(){
         
         // Enemys/Bullets
         var i = 0
         while (i < bulletArray.length){
+            
+
+
             game.beginPath();
             game.arc(bulletArray[i][1], bulletArray[i][2], bulletArray[i][0], 0, Math.PI*2);
             game.fillStyle = bulletArray[i][3];
@@ -122,6 +201,12 @@
             //game.strokeStyle = "black";
             //game.lineWidth = 5;
             //game.stroke();
+               
+            if (bulletArray[i][8]){
+                let img = document.getElementById(bulletArray[i][8]);
+                game.drawImage(img,bulletArray[i][1]-16,bulletArray[i][2]-16); 
+            }   
+            
 
             game.fill();           
             game.closePath();
@@ -131,10 +216,14 @@
         // Player's bullets
         i = 0
         while (i < playerArray.length){
+
+            let img = document.getElementById("playerBullet");
+
             game.beginPath();
             game.arc(playerArray[i][1], playerArray[i][2], playerArray[i][0], 0, Math.PI*2);
             game.fillStyle = playerArray[i][3];
             game.fill();
+            game.drawImage(img,playerArray[i][1]-8,playerArray[i][2]-8);
             game.closePath();
             i++;
         }
@@ -158,10 +247,10 @@
     }
 	
 	 function bossSpawn(){
-        if (timeSeconds%50 == 0 && timeSeconds > 0){   
+        if (timeSeconds%5 == 0 && timeSeconds > 0){   
             if (bossAlive == 0) {
                 bossHealth = 20;
-                bulletArray.push([20,canvas.width/2,canvas.height/10,"orange",10]);
+                bulletArray.push([20,canvas.width/2,canvas.height/10,"orange",10,1,1,1,"bossShip"]);
                 bossAlive = 1;
             }
         }
@@ -201,6 +290,22 @@
         }
     }
 
+    function Focus() {
+        window.onfocus = function() {
+            focused = true;
+        }
+        window.onblur = function() {
+            focused = false;
+            if (startMenu == false) {
+                paused = true;            
+                game.beginPath();
+                game.rect(0, 0, canvas.width, canvas.height);
+                game.fillStyle = "rgba(0,0,0,0.3)"
+                game.fill();
+            }
+        }
+    }
+
     function Pause() {
 
         if(pPressed){
@@ -223,6 +328,7 @@
             pPushed = false;
         }
     }
+
 
     function Start() {
 
@@ -287,23 +393,49 @@
 	
 	}
 	
+	//countdown of iframes
+	function iframecountdown()
+	{
+		if(iframeval > 0){
+		   iframeval--;
+		   
+		}
+		else{
+		   iframes = false;
+		   iframeval = iframevalOG;
+		}
+	
+	}
+	
     function Collision(){
         var i = 0
 		if  (bulletArray.length > 0) {
             while (i < bulletArray.length){
                 if (x > (bulletArray[i][1] - bulletArray[i][0]) && x < (bulletArray[i][0] + bulletArray[i][1])) {       
                     if (y > (bulletArray[i][2] - bulletArray[i][0]) && y < (bulletArray[i][0] + bulletArray[i][2])) {
+					
+				if(!iframes){	
+					if(playHP > 1)
+					{
+					
+					playHP--;
+					console.log(playHP);
+					bulletArray[i][4] = 9;
+					iframes = true;
+					
+					}
 
+					else{
+					//gameover start
                         let finishtime = timeSeconds;
-
-    				    if(resetStarted == false)
+						if(resetStarted == false)
 				        {	
                             let PlayerName = prompt('Game Over. Type Your Name For ScoreBoard!');
 																	 
 				            //adding player name to json
 				            if(ValidityChecker(PlayerName))
 				            {
-						        console.log('made it')
+						      
 						        var jsonNew = ',{"name" : "'+PlayerName+'", "Time" : '+finishtime+'}]';
 
 						        CookieCreator(jsonNew);
@@ -315,11 +447,14 @@
 								    console.log(response);
 							    });
 					        }							
-					    console.log('wowza');							
-					    setTimeout('restart()', 1);	
+						paused = true;			
+					    setTimeout('restart()', 150);	
 					    resetStarted = true;					
-                        }                   
-				    }				
+                        }
+                    //gameover end
+					 }	
+				    }
+					}					
 			    }
 
                 //if (bulletArray[i][7] == 1){
@@ -330,7 +465,9 @@
                             if (playerArray[j][2] > (bulletArray[i][2] - bulletArray[i][0]) && playerArray[j][2] < (bulletArray[i][0] + bulletArray[i][2])) {
 
                                 if (bulletArray[i][4] == 10) {
-                                    bossHealth -= 1;        
+                                    bossHealth -= 1;       
+                                    randomDirection(bulletArray[i][0],bulletArray[i][1],bulletArray[i][2],bulletArray[i][3]);
+                                    randomDirection(bulletArray[i][0],bulletArray[i][1],bulletArray[i][2],bulletArray[i][3]);
                                     playerArray[j][4] = 9;
                                 }
                                 else {
@@ -418,7 +555,7 @@
                     var dx = vx / dist;
                     var dy = vy / dist;
 
-                    bulletArray.push([15,bulletArray[i][1],bulletArray[i][2],"black",5,dx,dy]);
+                    bulletArray.push([15,bulletArray[i][1],bulletArray[i][2],"rgba(255,255,255,0)",5,dx,dy,1,"bulletActive"]);
                     bulletArray[i][4] = 9;
                     }
                 }
@@ -449,8 +586,13 @@
 
 
                     bulletArray[i][3] = ["rgb(",(bossHealth/20)*255,",",(bossHealth/20)*128,",",0,")"].join("")
+                    bulletArray[i][3] = "rgba(0,0,0,0)"
 
                     if (bossHealth < 1) {
+                        randomDirection(bulletArray[i][0],bulletArray[i][1],bulletArray[i][2],bulletArray[i][3]);
+                        randomDirection(bulletArray[i][0],bulletArray[i][1],bulletArray[i][2],bulletArray[i][3]);
+                        randomDirection(bulletArray[i][0],bulletArray[i][1],bulletArray[i][2],bulletArray[i][3]);
+                        randomDirection(bulletArray[i][0],bulletArray[i][1],bulletArray[i][2],bulletArray[i][3]);
                         bulletArray[i][4] = 9;
                         bossAlive = 0;
                     }
@@ -465,7 +607,7 @@
                             var dy = vy / dist;
 
 
-                            bulletArray.push([15,bulletArray[i][1],bulletArray[i][2],"black",5,dx,dy]);
+                            bulletArray.push([15,bulletArray[i][1],bulletArray[i][2],"rgba(255,255,255,0)",5,dx,dy,1,"bulletActive"]);
                             bossAttack = 1;
                         }
                     }
@@ -529,17 +671,17 @@
 
         // 2 diagonal and one enemy/tracking bullet
             if (pattern == 1){
-                bulletArray.push([15,canvas.width/2,0,"gray",4,timeSeconds]);
+                bulletArray.push([15,canvas.width/2,0,"rgba(128,128,128,0)",4,timeSeconds,1,1,"bulletInactive"]);
                 bulletArray.push([15,canvas.width/2,0,"blue",1,3,3,0]);
                 bulletArray.push([15,canvas.width/2,0,"blue",1,-3,3,0]);
             }
         // 5 straight shots
             else if (pattern == 2){
-                bulletArray.push([15,canvas.width/6,0,"green",1,0,5,0]);
-                bulletArray.push([15,canvas.width/6*2,0,"green",1,0,5,0]);
-                bulletArray.push([15,canvas.width/6*3,0,"green",1,0,5,0]);
-                bulletArray.push([15,canvas.width/6*4,0,"green",1,0,5,0]);
-                bulletArray.push([15,canvas.width/6*5,0,"green",1,0,5,0]);
+                bulletArray.push([15,canvas.width/6,0,"rgba(0,255,0,0)",1,0,5,0,"enemyShip"]);
+                bulletArray.push([15,canvas.width/6*2,0,"rgba(0,255,0,0)",1,0,5,0,"enemyShip"]);
+                bulletArray.push([15,canvas.width/6*3,0,"rgba(0,255,0,0)",1,0,5,0,"enemyShip"]);
+                bulletArray.push([15,canvas.width/6*4,0,"rgba(0,255,0,0)",1,0,5,0,"enemyShip"]);
+                bulletArray.push([15,canvas.width/6*5,0,"rgba(0,255,0,0)",1,0,5,0,"enemyShip"]);
             }
         // 4 diagonals
             else if (pattern == 3){
@@ -551,10 +693,10 @@
 
         // harder patterns
             else if (pattern == 4){
-                bulletArray.push([15,0,0,"gray",4,timeSeconds]);
-                bulletArray.push([15,canvas.width,0,"gray",4,timeSeconds]);
-                bulletArray.push([15,canvas.width/4,0,"gray",4,timeSeconds]);
-                bulletArray.push([15,canvas.width/4*3,0,"gray",4,timeSeconds]);         
+                bulletArray.push([15,0,0,"rgba(128,128,128,0)",4,timeSeconds,1,1,"bulletInactive"]);
+                bulletArray.push([15,canvas.width,0,"rgba(128,128,128,0)",4,timeSeconds,1,1,"bulletInactive"]);
+                bulletArray.push([15,canvas.width/4,0,"rgba(128,128,128,0)",4,timeSeconds,1,1,"bulletInactive"]);
+                bulletArray.push([15,canvas.width/4*3,0,"rgba(128,128,128,0)",4,timeSeconds,1,1,"bulletInactive"]);         
             }
             else if (pattern == 5){
                 bulletArray.push([30,0,0,"purple",1,2,0,0]);
@@ -604,15 +746,30 @@
 	sep.fillText(timeSeconds, 13, canvas.height - 13);
 	}
 	
+	//displaying health
+	function drawHealth(){
 	
+		for(i = 0;i < playHP;i++)
+		{
+			game.beginPath();
+			game.drawImage(playhealth,7+(i*30),7,20,20);
+			game.closePath();
+		
+		
+		}
+	
+	
+	}
     
     function draw() {
     // drawing code
 	
     Start();
+    Focus();
+
     if (startMenu == false) {
 	    Pause();
-            if (paused == false){
+            if (paused == false && focused == true){
 
 	            game.clearRect(0,0, canvas.width, canvas.height);
 	
@@ -623,7 +780,11 @@
                 Bullets();	                         
                 bulletMovement();
                 Collision();
+				drawHealth();
                 drawTime();
+				if(iframes){
+				iframecountdown();
+				}
 		        clearBullets();
             } 
             //console.log(rightPressed);	
