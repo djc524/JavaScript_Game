@@ -28,7 +28,12 @@
 <div class = "slider">
 <input type="range" min="0" max="10" value="10" class="slider" id="myslider">
 </div>
+
+ <button onclick="musicChange(0)"><-</button> 
+ <button onclick="musicChange(0)">-></button> 
+ 
 <script type="text/javascript" src="LeaderBoard.json"></script>
+
 <script>
 	// JavaScript code goes here
     
@@ -75,10 +80,49 @@
 	var iframevalOG = iframeval;
 	var iframes= false;
 	
+	var musiclist = ['coolsong.mp4','Final-Hour-isaiah658.mp3']
+	var musicindex = 0;
 	//playing music
 	var audio = new Audio('coolsong.mp4');
 	audio.play();
 	audio.loop = true;
+	
+	//function to change music
+	function musicChange(direction)
+	{
+	
+		if(direction == 0)
+		{
+			if(musicindex == 0)
+			{
+				musicindex = musiclist.length - 1;
+
+			}	
+            else
+			{
+				musicindex = musicindex- 1;
+			}			
+		}
+		else
+		{
+				if(musicindex == musicindex.length - 1)
+				{
+					musicindex = 0;
+				}
+				else
+				{				
+				musicindex = musicindex + 1;
+				}
+		}
+
+		audio.pause();
+		audio = new Audio(musiclist[musicindex])
+		audio.play();
+		audio.loop = true;
+	
+	}
+	
+	
 	
 	//slider change
 	myslider.addEventListener("change", function() {
@@ -359,8 +403,8 @@
 								    console.log(response);
 							    });
 					        }							
-									
-					    setTimeout('restart()', 1);	
+						paused = true;			
+					    setTimeout('restart()', 150);	
 					    resetStarted = true;					
                         }
                     //gameover end
