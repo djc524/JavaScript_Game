@@ -24,6 +24,12 @@ canvas
      bottom: 0;
 }
 
+.instructions {
+     padding-top: 340px;
+     padding-left: 10px;
+	 position: absolute;
+}
+
 #myCanvas
 {
     margin-left: 10px;
