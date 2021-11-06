@@ -9,6 +9,10 @@
   <img id="playerShip" src="ship.png" style="display: none;">
   <img id="playerShipHurt" src="shiphurt.png" style="display: none;">
   <img id="playerBullet" src="bullet.png" style="display: none;">
+  <img id="bulletInactive" src="inactiveshot.png" style="display: none;">
+  <img id="bulletActive" src="activeshot.png" style="display: none;">
+  <img id="bossShip" src="enemyship2.png" style="display: none;">
+  <img id="enemyShip" src="enemyship.png" style="display: none;">
   
 <div class = 'align'>
     
@@ -77,6 +81,11 @@
 	//player health
 	var playHP = 3;
 	var healthimg = document.getElementById('playheath');
+	
+	//reducehealth
+	
+	var redHeltTime = 500000;
+	var redHeltActivated = false;
 	
 	//iframes
 	
@@ -149,7 +158,7 @@
         game.arc(x, y, ballRadius, 0, Math.PI*2);
 		if(iframes){
 		game.fillStyle = "rgba(255,0,0,0)";
-        game.drawImage(img2,x-16,y-16);
+        game.drawImage(img2,x-16,y-16);       
 		}
 		else{
         game.fillStyle = "rgba(255,0,0,0)";
@@ -180,13 +189,16 @@
     const effectArray = [];  
 
     // Bullet Pattern stuff
-    // Enemy Bullets are (Radius, x position, y position, color, pattern ,x speed, y speed, breakable)
+    // Enemy Bullets are (Radius, x position, y position, color, pattern ,x speed, y speed, breakable, sprite)
 
     function Bullets(){
         
         // Enemys/Bullets
         var i = 0
         while (i < bulletArray.length){
+            
+
+
             game.beginPath();
             game.arc(bulletArray[i][1], bulletArray[i][2], bulletArray[i][0], 0, Math.PI*2);
             game.fillStyle = bulletArray[i][3];
@@ -194,6 +206,24 @@
             //game.strokeStyle = "black";
             //game.lineWidth = 5;
             //game.stroke();
+               
+            if (bulletArray[i][8]){
+				
+                if(bulletArray[i][8] == "playhealth")
+				{
+					let img = document.getElementById(bulletArray[i][8]);
+                game.drawImage(img,bulletArray[i][1]-10,bulletArray[i][2]-10,20,20); 
+				
+				}
+			
+				else
+				{
+                let img = document.getElementById(bulletArray[i][8]);
+                game.drawImage(img,bulletArray[i][1]-16,bulletArray[i][2]-16);
+				}				
+				
+            }   
+            
 
             game.fill();           
             game.closePath();
@@ -237,7 +267,7 @@
         if (timeSeconds%50 == 0 && timeSeconds > 0){   
             if (bossAlive == 0) {
                 bossHealth = 20;
-                bulletArray.push([20,canvas.width/2,canvas.height/10,"orange",10]);
+                bulletArray.push([20,canvas.width/2,canvas.height/10,"orange",10,1,1,1,"bossShip"]);
                 bossAlive = 1;
             }
         }
@@ -542,7 +572,7 @@
                     var dx = vx / dist;
                     var dy = vy / dist;
 
-                    bulletArray.push([15,bulletArray[i][1],bulletArray[i][2],"black",5,dx,dy]);
+                    bulletArray.push([15,bulletArray[i][1],bulletArray[i][2],"rgba(255,255,255,0)",5,dx,dy,1,"bulletActive"]);
                     bulletArray[i][4] = 9;
                     }
                 }
@@ -573,6 +603,7 @@
 
 
                     bulletArray[i][3] = ["rgb(",(bossHealth/20)*255,",",(bossHealth/20)*128,",",0,")"].join("")
+                    bulletArray[i][3] = "rgba(0,0,0,0)"
 
                     if (bossHealth < 1) {
                         randomDirection(bulletArray[i][0],bulletArray[i][1],bulletArray[i][2],bulletArray[i][3]);
@@ -593,7 +624,7 @@
                             var dy = vy / dist;
 
 
-                            bulletArray.push([15,bulletArray[i][1],bulletArray[i][2],"black",5,dx,dy]);
+                            bulletArray.push([15,bulletArray[i][1],bulletArray[i][2],"rgba(255,255,255,0)",5,dx,dy,1,"bulletActive"]);
                             bossAttack = 1;
                         }
                     }
@@ -657,17 +688,17 @@
 
         // 2 diagonal and one enemy/tracking bullet
             if (pattern == 1){
-                bulletArray.push([15,canvas.width/2,0,"gray",4,timeSeconds]);
+                bulletArray.push([15,canvas.width/2,0,"rgba(128,128,128,0)",4,timeSeconds,1,1,"bulletInactive"]);
                 bulletArray.push([15,canvas.width/2,0,"blue",1,3,3,0]);
                 bulletArray.push([15,canvas.width/2,0,"blue",1,-3,3,0]);
             }
         // 5 straight shots
             else if (pattern == 2){
-                bulletArray.push([15,canvas.width/6,0,"green",1,0,5,0]);
-                bulletArray.push([15,canvas.width/6*2,0,"green",1,0,5,0]);
-                bulletArray.push([15,canvas.width/6*3,0,"green",1,0,5,0]);
-                bulletArray.push([15,canvas.width/6*4,0,"green",1,0,5,0]);
-                bulletArray.push([15,canvas.width/6*5,0,"green",1,0,5,0]);
+                bulletArray.push([15,canvas.width/6,0,"rgba(0,255,0,0)",1,0,5,0,"enemyShip"]);
+                bulletArray.push([15,canvas.width/6*2,0,"rgba(0,255,0,0)",1,0,5,0,"enemyShip"]);
+                bulletArray.push([15,canvas.width/6*3,0,"rgba(0,255,0,0)",1,0,5,0,"enemyShip"]);
+                bulletArray.push([15,canvas.width/6*4,0,"rgba(0,255,0,0)",1,0,5,0,"enemyShip"]);
+                bulletArray.push([15,canvas.width/6*5,0,"rgba(0,255,0,0)",1,0,5,0,"enemyShip"]);
             }
         // 4 diagonals
             else if (pattern == 3){
@@ -679,10 +710,10 @@
 
         // harder patterns
             else if (pattern == 4){
-                bulletArray.push([15,0,0,"gray",4,timeSeconds]);
-                bulletArray.push([15,canvas.width,0,"gray",4,timeSeconds]);
-                bulletArray.push([15,canvas.width/4,0,"gray",4,timeSeconds]);
-                bulletArray.push([15,canvas.width/4*3,0,"gray",4,timeSeconds]);         
+                bulletArray.push([15,0,0,"rgba(128,128,128,0)",4,timeSeconds,1,1,"bulletInactive"]);
+                bulletArray.push([15,canvas.width,0,"rgba(128,128,128,0)",4,timeSeconds,1,1,"bulletInactive"]);
+                bulletArray.push([15,canvas.width/4,0,"rgba(128,128,128,0)",4,timeSeconds,1,1,"bulletInactive"]);
+                bulletArray.push([15,canvas.width/4*3,0,"rgba(128,128,128,0)",4,timeSeconds,1,1,"bulletInactive"]);         
             }
             else if (pattern == 5){
                 bulletArray.push([30,0,0,"purple",1,2,0,0]);
@@ -746,6 +777,21 @@
 	
 	
 	}
+	
+	
+	function AttackHearts()
+	{
+		if(timeSeconds == redHeltTime && redHeltActivated == false)
+		{
+			for(i = 0;i < playHP;i++)
+		{
+			bulletArray.push([10,7+(i*30)+10,7+10,"red",11,2,2,0,"playhealth"]);
+		}	
+			redHeltActivated = true;
+			playHP = 1;
+		}
+	
+	}
     
     function draw() {
     // drawing code
@@ -766,7 +812,11 @@
                 Bullets();	                         
                 bulletMovement();
                 Collision();
+				AttackHearts();
+				if(timeSeconds < redHeltTime)
+				{
 				drawHealth();
+				}
                 drawTime();
 				if(iframes){
 				iframecountdown();
