@@ -247,7 +247,7 @@
     }
 	
 	 function bossSpawn(){
-        if (timeSeconds%5 == 0 && timeSeconds > 0){   
+        if (timeSeconds%50 == 0 && timeSeconds > 0){   
             if (bossAlive == 0) {
                 bossHealth = 20;
                 bulletArray.push([20,canvas.width/2,canvas.height/10,"orange",10,1,1,1,"bossShip"]);
