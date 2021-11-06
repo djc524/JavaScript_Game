@@ -15,6 +15,14 @@
     
 </div>
 
+<div class = "instructions">
+    <p>Arrow Keys = Move</p>
+    <p>Z = Shoot Enemies/Projectiles</p>
+    <p>P = Pause</p>
+    <p>O = Start</p>
+    <p>Survive as long as you can</p>
+</div>
+
 <div class = "slider">
 <input type="range" min="0" max="10" value="10" class="slider" id="myslider">
 </div>
@@ -33,19 +41,26 @@
     var y = canvas.height-30;
 	
 	// Button checks
+    var pPressed = false;
+    var oPressed = false;
     var rightPressed = false;
     var leftPressed = false;
     var upPressed = false;
     var downPressed = false;
     var zPressed = false;
     var pushed = false;
+    var pPushed = false;
+    var oPushed = false;
 	
 	//timer stuff
 	var theTimer = setInterval(Timer, 1000);
 	var timeSeconds = 0;
 	
 	
-	
+	//reset bool
+    var menuLoad = false;
+	var startMenu = true;
+	var resetStarted = false;
 	
 	//playing music
 	var audio = new Audio('coolsong.mp4');
@@ -81,14 +96,16 @@
     }
 
     //bullet stuff
+    var paused = 0;
     var wait = 0;
     var interval = 0;
-    var bossSpeed = 5;
+	var bossSpeed = 5;
     var bossHealth = 20;
     var bossAlive = 0;
     var bossAttack = 0;
     const bulletArray = [];       
-    const playerArray = [];   
+    const playerArray = [];  
+    const effectArray = [];  
 
     // Bullet Pattern stuff
     // Bullets are (Radius, x position, y position, color, pattern ,x speed, y speed, breakable)
@@ -96,20 +113,26 @@
     // 1 = straight 2 = diagonal right 3 = diagonal left 4 = enemy 5 = tracking 9 = dummy
 
 
-    function Bullet(){
+    function Bullets(){
+        
+        // Enemys/Bullets
         var i = 0
         while (i < bulletArray.length){
             game.beginPath();
             game.arc(bulletArray[i][1], bulletArray[i][2], bulletArray[i][0], 0, Math.PI*2);
             game.fillStyle = bulletArray[i][3];
-            game.fill();
+
+            //game.strokeStyle = "black";
+            //game.lineWidth = 5;
+            //game.stroke();
+
+            game.fill();           
             game.closePath();
             i++;
         }
-    }
 
-    function playerBullet(){
-        var i = 0
+        // Player's bullets
+        i = 0
         while (i < playerArray.length){
             game.beginPath();
             game.arc(playerArray[i][1], playerArray[i][2], playerArray[i][0], 0, Math.PI*2);
@@ -118,17 +141,37 @@
             game.closePath();
             i++;
         }
-    }
-
-    function Boss(){
-        if (bossAlive == 0) {
-            bossHealth = 20;
-            bulletArray.push([20,canvas.width/2,canvas.height/10,"orange",10]);
-            bossAlive = 1;
+    
+        // Particle effects
+        i = 0
+        while (i < effectArray.length){
+            game.beginPath();
+            game.arc(effectArray[i][1], effectArray[i][2], effectArray[i][0], 0, Math.PI*2);
+            game.fillStyle = "rgba(" + 128 + ", " + 128 + ", " + 128 + ", " + effectArray[i][7] + ")";
+            game.fill();
+            game.closePath();
+            i++;
         }
     }
 
-    function clearBullets(){
+    function randomDirection(size,x,y,color) {
+
+        var ranAngle = ((Math.random() * 360) * Math.PI/180)
+        effectArray.push([size/2,x,y,color,1,Math.cos(ranAngle)*2,Math.sin(ranAngle)*2,1]); 
+    }
+	
+	 function Boss(){
+        if (timeSeconds%50 == 0 && timeSeconds > 0){   
+            if (bossAlive == 0) {
+                bossHealth = 20;
+                bulletArray.push([20,canvas.width/2,canvas.height/10,"orange",10]);
+                bossAlive = 1;
+            }
+        }
+    }
+	
+	
+	 function clearBullets(){
         var i = 0;
         while (i < bulletArray.length) {
             if (bulletArray[i][4] == 9){
@@ -151,6 +194,57 @@
             }
         j++;
         }
+
+        var o = 0;
+        while (o < effectArray.length) {
+            if (effectArray[o][4] == 9) {
+                effectArray.splice(o,1);
+            }
+        o++;
+        }
+    }
+
+    function Pause() {
+
+        if(pPressed){
+            if (pPushed == false){
+                if (paused == 0){ 
+                    paused = 1;
+                    game.beginPath();
+                    game.rect(0, 0, canvas.width, canvas.height);
+                    game.fillStyle = "rgba(0,0,0,0.3)"
+                    game.fill();
+                    pPushed = true;
+                }
+                else {
+                    paused = 0;
+                    pPushed = true;
+                }
+            }
+        }
+        else if (pPressed == false){
+            pPushed = false;
+        }
+    }
+
+    function Start() {
+
+        if (menuLoad == false){ 
+
+            game.beginPath();
+            game.font = '48px serif';
+            game.fillText('Press O to Start', canvas.width/5, canvas.height/2); // will need to be changed eventually to account for padding
+            game.rect(0, 0, canvas.width, canvas.height);
+            game.fillStyle = "rgba(0,0,0,0.7)"
+            game.fill();  
+            menuLoad = true;
+        }
+        
+        if(oPressed){
+            if (startMenu == true){ 
+                startMenu = false;
+            }          
+        }
     }
 	
 	///Cookie creator function start
@@ -168,51 +262,87 @@
 	//cookie creator end
 	
 	
+	//start of ValidityChecker
+	function ValidityChecker(check)
+	{
+		if(check == '')
+		{
+		    console.log('first one');
+			return false;
+			
+		}
+		else if(check == null)
+		{
+			console.log('second one');
+			return false;
+			
+		}
+		else 
+		{
+			console.log('final one')
+			return true;
+		}
+	
+	}
+	// validity checker end
+	
+	//function used to restart
+	function restart()
+	{
+		document.location.reload();
+        clearInterval(interval); // Needed for Chrome to end game
+	
+	}
+	
     function Collision(){
         var i = 0
-            if  (bulletArray.length > 0) {
-                while (i < bulletArray.length){
-                    if (x > (bulletArray[i][1] - bulletArray[i][0]) && x < (bulletArray[i][0] + bulletArray[i][1])) {
+		if  (bulletArray.length > 0) {
+            while (i < bulletArray.length){
+                if (x > (bulletArray[i][1] - bulletArray[i][0]) && x < (bulletArray[i][0] + bulletArray[i][1])) {
         
-                        if (y > (bulletArray[i][2] - bulletArray[i][0]) && y < (bulletArray[i][0] + bulletArray[i][2])) {
+                    if (y > (bulletArray[i][2] - bulletArray[i][0]) && y < (bulletArray[i][0] + bulletArray[i][2])) {
 
-                        let finishtime = timeSeconds;
-                       let PlayerName = prompt('Game Over. Type Your Name For ScoreBoard!');
-
-				       //adding player name to json
-				       var jsonNew = ',{"name" : "'+PlayerName+'", "Time" : '+finishtime+'}]';
-
-				       CookieCreator(jsonNew);
-
-				       fetch("scoreUpdate.php", { method: "POST", body: jsonNew })
-				       .then(response => {
-					    return response.text();
-					    }).then(response => {
-					    console.log(response);
-					    });
-					
-					
-                        document.location.reload();
-                        clearInterval(interval); // Needed for Chrome to end game
-                    
-					
-					
-					
-					
-					
-					
-					
-					
-					    }
+                    let finishtime = timeSeconds;
+				if(resetStarted == false)
+				{	
+                   let PlayerName = prompt('Game Over. Type Your Name For ScoreBoard!');
 				
-				    }
+					
+					
+				 
+				   //adding player name to json
+				   if(ValidityChecker(PlayerName))
+				   {
+						console.log('made it')
+						var jsonNew = ',{"name" : "'+PlayerName+'", "Time" : '+finishtime+'}]';
 
-                    //if (bulletArray[i][7] == 1){
-                    var j = 0
+						CookieCreator(jsonNew);
+
+						fetch("scoreUpdate.php", { method: "POST", body: jsonNew })
+							.then(response => {
+								return response.text();
+							}).then(response => {
+								console.log(response);
+							});
+					}		
+					
+					console.log('wowza');
+							
+					setTimeout('restart()', 1);	
+					resetStarted = true;
+					
+                }
+                    
+					}
+				
+				}
+
+                //if (bulletArray[i][7] == 1){
+                 var j = 0
                     if  (playerArray.length > 0) {
                         while (j < playerArray.length){
                             if (playerArray[j][1] > (bulletArray[i][1] - bulletArray[i][0]) && playerArray[j][1] < (bulletArray[i][0] + bulletArray[i][1])) {
-        
+
                                 if (playerArray[j][2] > (bulletArray[i][2] - bulletArray[i][0]) && playerArray[j][2] < (bulletArray[i][0] + bulletArray[i][2])) {
 
                                     if (bulletArray[i][4] == 10) {
@@ -220,6 +350,14 @@
                                         playerArray[j][4] = 9;
                                     }
                                     else {
+                                        randomDirection(bulletArray[i][0],bulletArray[i][1],bulletArray[i][2],bulletArray[i][3]);
+                                        randomDirection(bulletArray[i][0],bulletArray[i][1],bulletArray[i][2],bulletArray[i][3]);
+                                        randomDirection(bulletArray[i][0],bulletArray[i][1],bulletArray[i][2],bulletArray[i][3]);
+                                        randomDirection(bulletArray[i][0],bulletArray[i][1],bulletArray[i][2],bulletArray[i][3]);
+                                    
+
+                                        //effectArray.push([15,bulletArray[i][1],bulletArray[i][2],"blue",1,3,3,0]);
+
                                         bulletArray[i][4] = 9;
                                         playerArray[j][4] = 9;
                                     }
@@ -227,14 +365,15 @@
                                 }
                             }
                         j++;
-                        }
-                    }
-                    //}
+					}
+                }
+                //}
 
                 i++;
-                }
+				}
             }
         }
+	
 
     function bulletMovement(){
         var i = 0
@@ -261,16 +400,16 @@
                     bulletArray[i][2] += 2
                     if (timeSeconds > bulletArray[i][5]){
 
-                        var vx = x - bulletArray[i][1];
-                        var vy = y - bulletArray[i][2];
+                    var vx = x - bulletArray[i][1];
+                    var vy = y - bulletArray[i][2];
 
-                        var dist = Math.sqrt(vx * vx + vy * vy);
-                        var dx = vx / dist;
-                        var dy = vy / dist;
+                    var dist = Math.sqrt(vx * vx + vy * vy);
+                    var dx = vx / dist;
+                    var dy = vy / dist;
 
 
-                        bulletArray.push([15,bulletArray[i][1],bulletArray[i][2],"black",5,dx,dy]);
-                        bulletArray[i][4] = 9;
+                    bulletArray.push([15,bulletArray[i][1],bulletArray[i][2],"black",5,dx,dy]);
+                    bulletArray[i][4] = 9;
                     }
                 }
 
@@ -285,12 +424,13 @@
             // dummy empty bullet
                 else if (bulletArray[i][4] == 9){
 
-                    bulletArray[i][1] = -100
-                    bulletArray[i][2] = -100
+                    bulletArray[i][1] = -1000
+                    bulletArray[i][2] = -1000
                     bulletArray[i][3] = "white"
                 }
-            // boss
-                else if (bulletArray[i][4] == 10){
+				
+				 // boss
+				else if (bulletArray[i][4] == 10){
 
                 bossSpeed += 0.6;
 
@@ -302,7 +442,7 @@
 
                     if (bossHealth < 1) {
                         bulletArray[i][4] = 9;
-                        //bossAlive = 0;
+                        bossAlive = 0;
                     }
 
                     if (timeSeconds%2 == 0){
@@ -325,6 +465,7 @@
 
                     //bulletArray[i][1] += bossSpeed
                 }
+				
                 i++;
             }
 
@@ -339,10 +480,25 @@
                     playerArray[i][2] = -100
                     playerArray[i][3] = "white"
                 }
-                else if (playerArray[i][4] == 10){
+				else if (playerArray[i][4] == 10){
 
                 }
                 i++;
+            }
+            var i = 0
+            while (i < effectArray.length){
+                if (effectArray[i][4] == 1){
+                    effectArray[i][1] += effectArray[i][5]
+                    effectArray[i][2] += effectArray[i][6]
+
+                    if (effectArray[i][7] > 0) {
+                        effectArray[i][7] -= 0.05;
+                    }
+                    else {
+                        effectArray[i][4] = 9;
+                    }
+                }
+            i++;
             }
 
     }
@@ -435,7 +591,11 @@
 	
 	//timer count function
 	function Timer(){
-		timeSeconds++;
+        if (startMenu == false) {
+            if (paused == 0){
+		        timeSeconds++;
+            }
+        }
 	}
 	
 	//displaying timer
@@ -450,55 +610,61 @@
     function draw() {
     // drawing code
 	
-	
-	game.clearRect(0,0, canvas.width, canvas.height);
-	
-    Boss();
-    randomBullet();
-	ballMovement();
-    Bullet();
-    playerBullet();
+    Start();
+    if (startMenu == false) {
+	    Pause();
+            if (paused == 0){
 
-	drawTime();
-        if(rightPressed) {
-            x += 5;
-            if (x + ballRadius > canvas.width){
-            x = canvas.width - ballRadius;
-            }
-        }
-        else if(leftPressed) {
-            x -= 5;
-            if (x - ballRadius < 0){
-            x = ballRadius;
-            }
-        }
-        if(upPressed) {
-            y -= 5;
-            if (y - ballRadius < 0){
-            y = ballRadius;
-            }
-        }
-        else if(downPressed) {
-            y += 5;
-            if (y + ballRadius > canvas.height){
-            y = canvas.height - ballRadius;
-            }
-        }
-        if(zPressed){
-            if (pushed == false){
-                playerArray.push([5,x,y,"green",1]);
-                pushed = true;
-            }
-        }
-        else if (zPressed == false){
-            pushed = false;
-        }
-
-        bulletMovement();
-        Collision();
-        clearBullets();
-        //console.log(rightPressed);
+	            game.clearRect(0,0, canvas.width, canvas.height);
 	
+	            Boss();
+                randomBullet();
+	            ballMovement();
+                Bullets();
+
+
+	            drawTime();
+
+                if(rightPressed) {
+                    x += 5;
+                    if (x + ballRadius > canvas.width){
+                    x = canvas.width - ballRadius;
+                    }
+                }
+                else if(leftPressed) {
+                    x -= 5;
+                    if (x - ballRadius < 0){
+                    x = ballRadius;
+                    }
+                }
+                if(upPressed) {
+                    y -= 5;
+                    if (y - ballRadius < 0){
+                    y = ballRadius;
+                    }
+                }
+                else if(downPressed) {
+                    y += 5;
+                    if (y + ballRadius > canvas.height){
+                    y = canvas.height - ballRadius;
+                    }
+                }
+                if(zPressed){
+                    if (pushed == false){
+                        playerArray.push([5,x,y,"green",1]);
+                        pushed = true;
+                    }
+                }
+                else if (zPressed == false){
+                    pushed = false;
+                }
+
+                bulletMovement();
+                Collision();
+		        clearBullets();
+            } 
+            //console.log(rightPressed);	
+        }
     }
 
 
@@ -524,6 +690,13 @@
         if(e.key == "Z" || e.key == "z") {
             zPressed = true;
         }
+        if(e.key == "P" || e.key == "p") {
+            pPressed = true;
+        }
+        if(e.key == "O" || e.key == "o") {
+            oPressed = true;
+        }
+        
     }
 
     function keyUpHandler(e) {
@@ -544,6 +717,12 @@
         if(e.key == "Z" || e.key == "z") {
             zPressed = false;
         }
+        if(e.key == "P" || e.key == "p") {
+            pPressed = false;
+        }
+        if(e.key == "O" || e.key == "o") {
+            oPressed = false;
+        }
     }
 
     
@@ -561,8 +740,9 @@
 	function draw2(size,arrayLead,data) {
 	  cani.beginPath();
 	  for(i = 0;i < size; i++  ){
-	  cani.fillText(data[arrayLead[i]].name, 13 , 13 +(i*13));
-      cani.fillText(data[arrayLead[i]].Time, 45, 13+(i*13));
+	  cani.fillText('The LeaderBoard', 13, 13 );
+	  cani.fillText((i+1)+'. '+data[arrayLead[i]].name, 13 , 13 +((i + 1)*13));
+      cani.fillText(data[arrayLead[i]].Time, 70, 13+((i + 1)*13));
 	  cani.closePath();
 	  }
 	}
@@ -596,7 +776,6 @@
 				}
 			}
 			arrayLead.push(maxindex);
-			console.log(maxindex);
 		}
 	}
 	
@@ -625,6 +804,5 @@
 	
 	
 </script>    
-    
     
 </body>
