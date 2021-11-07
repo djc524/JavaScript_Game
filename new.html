@@ -84,7 +84,7 @@
 	
 	//reducehealth
 	
-	var redHeltTime = 500000;
+	var redHeltTime = 150;
 	var redHeltActivated = false;
 	
 	//iframes
@@ -436,7 +436,6 @@
 					{
 					
 					playHP--;
-					console.log(playHP);
 					bulletArray[i][4] = 9;
 					iframes = true;
 					
@@ -632,6 +631,111 @@
                         bossAttack = 0;
                     }
                 }
+				//health enemy 1
+				else if (bulletArray[i][4] == 11){
+				
+					
+					let positionx = x + (100 * (Math.cos((bulletArray[i][6] * Math.PI) / 180)));
+					let positiony = y + (100 * (Math.sin((bulletArray[i][6] * Math.PI) / 180)));
+				    console.log(positionx);
+					let ox = positionx - bulletArray[i][1];
+					let oy = positiony - bulletArray[i][2];
+					let posx = true;
+					let posy = true;
+					
+					let angle = Math.atan2(oy,ox);
+					
+					let xvec = 10 * Math.cos(angle);
+					let yvec = 10 * Math.sin(angle);
+					
+					if(xvec < 0){ posx = false;}
+					if(yvec < 0){ posy = false;}
+					
+					if(posx)
+					{
+						if ((bulletArray[i][1] + xvec) > positionx)
+						{
+						   bulletArray[i][1] = positionx;
+						   bulletArray[i][6] += 1;
+						   
+						   if (timeSeconds%bulletArray[i][5] == 0)
+						   {
+								if (bulletArray[i][7] == 0) 
+								{
+									var vx = x - bulletArray[i][1];
+									var vy = y - bulletArray[i][2];
+
+									var dist = Math.sqrt(vx * vx + vy * vy);
+									var dx = vx / dist;
+									var dy = vy / dist;
+
+
+									bulletArray.push([15,bulletArray[i][1],bulletArray[i][2],"rgba(255,255,255,0)",5,dx,dy,1,"bulletActive"]);
+                            bulletArray[i][7] = 1;
+                        }
+                    }
+                    else {
+                        bulletArray[i][7] = 0;
+                    }
+						
+						}
+						else
+						{
+							bulletArray[i][1] += xvec;
+						}
+					
+					}
+					
+					else
+					{
+						
+						if ((bulletArray[i][1] + xvec) < positionx)
+						{
+						   bulletArray[i][1] = positionx;
+						   bulletArray[i][6] += 1;
+						}
+						else
+						{
+							bulletArray[i][1] += xvec;
+						}
+					
+					}
+					
+					if(posy)
+					{
+						if ((bulletArray[i][2] + yvec) > positiony)
+						{
+						   bulletArray[i][2] = positiony;
+						   bulletArray[i][6] += 1;
+						}
+						else
+						{
+							bulletArray[i][2] += yvec;
+						}
+					
+					}
+					
+					else
+					{
+						
+						if ((bulletArray[i][2] + yvec) < positiony)
+						{
+						   bulletArray[i][2] = positiony;
+                           bulletArray[i][6] += 1;
+						}
+						else
+						{
+							bulletArray[i][2] += yvec;
+						}
+					
+					}
+					
+					
+					
+				
+				
+				
+				}
 				
                 i++;
             }
@@ -785,7 +889,7 @@
 		{
 			for(i = 0;i < playHP;i++)
 		{
-			bulletArray.push([10,7+(i*30)+10,7+10,"red",11,2,2,0,"playhealth"]);
+			bulletArray.push([10,7+(i*30)+10,7+10,"rgba(255,255,255,0)",11,2+i,(120+(i*120)),0,"playhealth"]);
 		}	
 			redHeltActivated = true;
 			playHP = 1;
