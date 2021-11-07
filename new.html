@@ -70,6 +70,9 @@
 	var theTimer = setInterval(Timer, 1000);
 	var timeSeconds = 0;
 	
+	//score stuff
+	var score = 0;
+	
 	
 	//reset bool
     var menuLoad = false;
@@ -443,7 +446,7 @@
 
 					else{
 					//gameover start
-                        let finishtime = timeSeconds;
+                        let finishtime = score;
 						if(resetStarted == false)
 				        {	
                             let PlayerName = prompt('Game Over. Type Your Name For ScoreBoard!');
@@ -464,7 +467,7 @@
 							    });
 					        }							
 						paused = true;			
-					    setTimeout('restart()', 150);	
+					    setTimeout('restart()', 1500);	
 					    resetStarted = true;					
                         }
                     //gameover end
@@ -493,6 +496,7 @@
                                     randomDirection(bulletArray[i][0],bulletArray[i][1],bulletArray[i][2],bulletArray[i][3]);
                                     bulletArray[i][4] = 9;
                                     playerArray[j][4] = 9;
+									score += 2;
                                 }
                             }
                         }
@@ -611,6 +615,7 @@
                         randomDirection(bulletArray[i][0],bulletArray[i][1],bulletArray[i][2],bulletArray[i][3]);
                         bulletArray[i][4] = 9;
                         bossAlive = 0;
+						score+=50;
                     }
 
                     if (timeSeconds%2 == 0){
@@ -856,6 +861,8 @@
         if (startMenu == false) {
             if (paused == false){
 		        timeSeconds++;
+				//increase score too
+				score++;
             }
         }
 	}
@@ -865,6 +872,10 @@
 	sep.fillStyle = "black";
 	sep.font = "bold 18px Brush Script MT";
 	sep.fillText(timeSeconds, 13, canvas.height - 13);
+	
+	sep.fillStyle = "black";
+	sep.font = "bold 18px Brush Script MT";
+	sep.fillText(score, canvas.width - 27, canvas.height - 13);
 	}
 	
 	//displaying health
